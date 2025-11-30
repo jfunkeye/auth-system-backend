@@ -1,20 +1,26 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter - FIXED: createTransporter → createTransport
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: false,
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  // Add these settings for Render
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
+  logger: true,
+  debug: true
 });
 
-// Verify transporter connection
-transporter.verify(function (error, success) {
+// Test connection
+transporter.verify(function(error, success) {
   if (error) {
-    console.log('Email transporter error:', error);
+    console.log('Email connection error:', error);
   } else {
     console.log('Email server is ready to send messages');
   }
@@ -52,6 +58,7 @@ export const sendVerificationEmail = async (email, verificationCode, firstName) 
     throw new Error('Failed to send verification email');
   }
 };
+
 
 export const sendPasswordResetEmail = async (email, resetToken, firstName) => {
   try {
