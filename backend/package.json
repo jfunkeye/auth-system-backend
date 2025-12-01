@@ -16,7 +16,8 @@
     "nodemailer": "^6.9.4",
     "express-rate-limit": "^6.8.1",
     "helmet": "^7.0.0",
-    "express-validator": "^7.0.1"
+    "express-validator": "^7.0.1",
+    "googleapis": "^126.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
