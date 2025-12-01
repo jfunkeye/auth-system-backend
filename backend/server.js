@@ -30,22 +30,38 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Add this before your routes
-app.get('/api/debug-routes', (req, res) => {
+// Homepage route
+app.get('/', (req, res) => {
   res.json({
-    message: 'Auth routes are available',
-    endpoints: [
-      'POST /api/auth/register',
-      'POST /api/auth/login', 
-      'POST /api/auth/verify-email',
-      'POST /api/auth/forgot-password',
-      'POST /api/auth/reset-password',
-      'POST /api/auth/change-password'
-    ]
+    message: 'Authentication System API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login',
+        verifyEmail: 'POST /api/auth/verify-email',
+        forgotPassword: 'POST /api/auth/forgot-password',
+        resetPassword: 'POST /api/auth/reset-password',
+        changePassword: 'POST /api/auth/change-password'
+      },
+      test: '/api/test'
+    },
+    documentation: 'Visit /api/debug-routes for all available routes'
   });
 });
 
-
+// API info route
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'Authentication API',
+    basePath: '/api',
+    routes: {
+      auth: '/api/auth',
+      test: '/api/test'
+    }
+  });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
