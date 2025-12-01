@@ -30,6 +30,23 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Add this before your routes
+app.get('/api/debug-routes', (req, res) => {
+  res.json({
+    message: 'Auth routes are available',
+    endpoints: [
+      'POST /api/auth/register',
+      'POST /api/auth/login', 
+      'POST /api/auth/verify-email',
+      'POST /api/auth/forgot-password',
+      'POST /api/auth/reset-password',
+      'POST /api/auth/change-password'
+    ]
+  });
+});
+
+
+
 // Routes
 app.use('/api/auth', authRoutes);
 
