@@ -1,33 +1,51 @@
 import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  // Add these settings for Render
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-  logger: true,
-  debug: true
-});
+const OAuth2 = google.auth.OAuth2;
 
-// Test connection
-transporter.verify(function(error, success) {
-  if (error) {
-    console.log('Email connection error:', error);
-  } else {
-    console.log('Email server is ready to send messages');
-  }
-});
+const createTransporter = async () => {
+  const oauth2Client = new OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
+  });
+
+  const accessToken = await new Promise((resolve, reject) => {
+    oauth2Client.getAccessToken((err, token) => {
+      if (err) {
+        console.log('Error getting access token:', err);
+        reject("Failed to create access token");
+      }
+      resolve(token);
+    });
+  });
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: process.env.EMAIL_USER,
+      accessToken,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN
+    },
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
+
+  return transporter;
+};
 
 export const sendVerificationEmail = async (email, verificationCode, firstName) => {
   try {
+    const transporter = await createTransporter();
+
     const mailOptions = {
       from: `"Auth System" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -59,9 +77,9 @@ export const sendVerificationEmail = async (email, verificationCode, firstName) 
   }
 };
 
-
 export const sendPasswordResetEmail = async (email, resetToken, firstName) => {
   try {
+    const transporter = await createTransporter();
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
     const mailOptions = {
